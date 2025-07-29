@@ -23,6 +23,7 @@ remote_ver_chk()
 
 version_lt() 
 {
+	echo "Compare function"
     v1=$(echo "$1" | sed 's/^v//')
     v2=$(echo "$2" | sed 's/^v//')
 
@@ -31,6 +32,7 @@ version_lt()
 
 install_required_software()
 {
+	echo "Installing software"
     git clone --depth 1 https://github.com/ryanoasis/nerd-fonts.git
     cd nerd-fonts
     ./install.sh
@@ -51,7 +53,7 @@ REMOTE_REPO_VERSION=$(remote_ver_chk)
 echo "[-] Remote repo version : $REMOTE_REPO_VERSION"
 
 if version_lt "$CURRENT_VERSION" "$REMOTE_REPO_VERSION"; then
-    install_required_software()
+    install_required_software
     echo "⚠️ Need to insall new version $REMOTE_REPO_VERSION"
     echo "  Downloading github repo"
     git clone $NVIM_REPO_URL
