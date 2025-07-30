@@ -19,11 +19,11 @@ remote_ver_chk()
         cut -d/ -f3                                             | 
         sort -V                                                 | 
         tail -n1
-}
+ }
 
 version_lt() 
 {
-	echo "Compare function"
+    echo "Compare function"
     v1=$(echo "$1" | sed 's/^v//')
     v2=$(echo "$2" | sed 's/^v//')
 
@@ -32,7 +32,7 @@ version_lt()
 
 install_required_software()
 {
-	echo "Installing software"
+    echo "Installing software"
     git clone --depth 1 https://github.com/ryanoasis/nerd-fonts.git
     cd nerd-fonts
     ./install.sh
@@ -55,6 +55,21 @@ echo "[-] Remote repo version : $REMOTE_REPO_VERSION"
 if version_lt "$CURRENT_VERSION" "$REMOTE_REPO_VERSION"; then
     install_required_software
     echo "⚠️ Need to insall new version $REMOTE_REPO_VERSION"
+
+    if [ -d neovim ]; then
+        echo "neovim folder exist"
+        if [ -z "$(ls -A neovim)" ]; then
+            echo "folder is empty"
+        else
+            if [ -d "neovim/.git" ]; then
+                echo "neovim is a git repo"
+            fi
+        fi
+
+        rm -rf neovim
+        echo "⚠️ neovim folder deleted"
+    fi
+
     echo "  Downloading github repo"
     git clone $NVIM_REPO_URL
     cd neovim
@@ -63,7 +78,7 @@ if version_lt "$CURRENT_VERSION" "$REMOTE_REPO_VERSION"; then
     make CMAKE_BUILD_TYPE=Debug
     sudo make install
 else
-    echo "✅  NVIM is updated"
+    echo "✅  NVIM is installed and updated"
 fi
 
 #Backup existing config
@@ -75,20 +90,20 @@ fi
 git clone https://github.com/Tinchu20/nvim-cfg ~/.config/nvim
 echo "[+] ✅ Done. Launch Neovim with: nvim"
 
-echo " Neovim"   # nf-dev-neovim
-echo " GitHub"   # nf-fa-github
-echo " Git"      # nf-dev-git
-echo " Nvim"
+#echo " Neovim"   # nf-dev-neovim
+#echo " GitHub"   # nf-fa-github
+#echo " Git"      # nf-dev-git
+#echo " Nvim"
 
-echo -e "\ue62b Neovim"
-echo -e "\ue7c5 Neovim"
-echo -e "\e[1;32m\ue7c5 Neovim\e[0m"
+#echo -e "\ue62b Neovim"
+#echo -e "\ue7c5 Neovim"
+#echo -e "\e[1;32m\ue7c5 Neovim\e[0m"
 
-echo "✅ Success"
-echo "⚠️ Warning"
-echo "❌ Failed"
-echo "📦 Installing package"
-echo "🔍 Checking versions..."
+#echo "✅ Success"
+#echo "⚠️ Warning"
+#echo "❌ Failed"
+#echo "📦 Installing package"
+#echo "🔍 Checking versions..."
 
 
 
