@@ -29,3 +29,4 @@ vim.opt.swapfile = false
 vim.opt.syntax = on
 
 --vim.keymap.set('n', '<leader>tt', ':term<CR>', {})
+

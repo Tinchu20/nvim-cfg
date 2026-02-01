@@ -23,14 +23,98 @@ return {
             })
         end
     },
+
+    --[[
+
+-- === LSP Config ===
+    {
+        "neovim/nvim-lspconfig",
+        config = function()
+
+            -- === Clangd for C/C++ ===
+            vim.lsp.config("clangd", {
+                cmd = {
+                    "clangd",
+                    "--background-index",
+                    "--clang-tidy",
+                    "--query-driver=/usr/bin/gcc", -- adjust if using ARM/AVR GCC
+                },
+                filetypes = { "c", "cpp" },
+                root_dir = function(fname)
+                    local root_files = { "compile_commands.json", "Makefile", "CMakeLists.txt" }
+                    for _, file in ipairs(root_files) do
+                        local dir = vim.fs.find(file, { upward = true, path = fname })[1]
+                        if dir then return vim.fs.dirname(dir) end
+                    end
+                    return vim.loop.cwd()
+                end,
+                init_options = {
+                    fallbackFlags = { "-Wall" },
+                },
+            })
+
+            -- === ASM LSP auto-start on ASM/ARM files ===
+            vim.api.nvim_create_autocmd("FileType", {
+                pattern = { "asm", "s", "S", "arm" },
+                callback = function()
+                    vim.lsp.start({
+                        name = "asm_lsp",
+                        cmd = { "asm-lsp" },
+                        root_dir = vim.loop.cwd(),
+                    })
+                end
+            })
+
+            -- === LSP Keymaps ===
+            vim.api.nvim_create_autocmd("LspAttach", {
+                callback = function(args)
+                    local opts = { buffer = args.buf }
+                    vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+                    vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+                    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+                    vim.keymap.set("n", "<leader>lr", ":LspRestart<CR>", opts)
+                end,
+            })
+
+        end,
+    },
+]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     -- LSP Config
   {
     "neovim/nvim-lspconfig",
     config = function()
-      local lspconfig = require("lspconfig")
+      --local lspconfig = require("lspconfig")
 
       -- Configure clangd for C/C++ (embedded-friendly)
-      lspconfig.clangd.setup({
+      --lspconfig.clangd.setup({
+        --vim.lspconfig.clangd.setup({
+        vim.lsp.config('clangd', {
         cmd = {
           "clangd",
           "--background-index",
@@ -53,7 +137,7 @@ return {
         },
       })
 
-      -- Keymaps for LSP
+                  -- Keymaps for LSP
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
           local opts = { buffer = args.buf }
@@ -69,6 +153,7 @@ return {
       })
     end,
     },
+
     -- Autocompletion (optional)
     {
         "hrsh7th/nvim-cmp",
