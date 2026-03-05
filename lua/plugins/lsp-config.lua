@@ -1,177 +1,97 @@
 return {
+    -- Mason: UI to install LSP servers  (:Mason to open)
     {
-        --"williamboman/mason.nvim",
         "mason-org/mason.nvim",
         config = function()
             require("mason").setup()
         end
     },
+
+    -- mason-lspconfig: auto-installs servers via Mason
+    -- NOTE: only used for installation — NOT for configuration
     {
         "mason-org/mason-lspconfig.nvim",
-        dependencies = {"neovim/nvim-lspconfig"},
+        dependencies = { "mason-org/mason.nvim" },
         config = function()
             require("mason-lspconfig").setup({
-                ensure_installed = {
-                    --"bashls",       -- Bash
-                    "clangd",       -- C/C++
-                    "lua_ls",       -- Lua
-                    --"pyright",      -- Python
-                    --"rust_analyzer",-- Rust
-                    --"vimls",        -- Vimscript
-                    --"asm_lsp",      -- Assembly (x86/ARM)
-                },
+                ensure_installed = { "clangd", "lua_ls" },
             })
         end
     },
 
-    --[[
+    -- nvim-cmp capabilities helper (no lspconfig needed on Nvim 0.11)
+    { "hrsh7th/cmp-nvim-lsp" },
 
--- === LSP Config ===
+    -- Pure Nvim 0.11 LSP setup — no nvim-lspconfig at all
+    -- vim.lsp.config() + vim.lsp.enable() is the native API now
     {
-        "neovim/nvim-lspconfig",
-        config = function()
-
-            -- === Clangd for C/C++ ===
-            vim.lsp.config("clangd", {
-                cmd = {
-                    "clangd",
-                    "--background-index",
-                    "--clang-tidy",
-                    "--query-driver=/usr/bin/gcc", -- adjust if using ARM/AVR GCC
-                },
-                filetypes = { "c", "cpp" },
-                root_dir = function(fname)
-                    local root_files = { "compile_commands.json", "Makefile", "CMakeLists.txt" }
-                    for _, file in ipairs(root_files) do
-                        local dir = vim.fs.find(file, { upward = true, path = fname })[1]
-                        if dir then return vim.fs.dirname(dir) end
-                    end
-                    return vim.loop.cwd()
-                end,
-                init_options = {
-                    fallbackFlags = { "-Wall" },
-                },
-            })
-
-            -- === ASM LSP auto-start on ASM/ARM files ===
-            vim.api.nvim_create_autocmd("FileType", {
-                pattern = { "asm", "s", "S", "arm" },
-                callback = function()
-                    vim.lsp.start({
-                        name = "asm_lsp",
-                        cmd = { "asm-lsp" },
-                        root_dir = vim.loop.cwd(),
-                    })
-                end
-            })
-
-            -- === LSP Keymaps ===
-            vim.api.nvim_create_autocmd("LspAttach", {
-                callback = function(args)
-                    local opts = { buffer = args.buf }
-                    vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-                    vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-                    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-                    vim.keymap.set("n", "<leader>lr", ":LspRestart<CR>", opts)
-                end,
-            })
-
-        end,
-    },
-]]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    -- LSP Config
-  {
-    "neovim/nvim-lspconfig",
-    config = function()
-      --local lspconfig = require("lspconfig")
-
-      -- Configure clangd for C/C++ (embedded-friendly)
-      --lspconfig.clangd.setup({
-        --vim.lspconfig.clangd.setup({
-        vim.lsp.config('clangd', {
-        cmd = {
-          "clangd",
-          "--background-index",
-          "--clang-tidy",
-          "--query-driver=/usr/bin/gcc", -- Adjust for ARM/AVR-GCC if needed
-        },
-        filetypes = { "c", "cpp" },
-        --root_dir = lspconfig.util.root_pattern(
-          --"compile_commands.json", -- Highest priority
-          --"Makefile",
-          --"CMakeLists.txt"
-        --),
-        init_options = {
-          fallbackFlags = {
-            --"-I/usr/include",
-            --"-I/usr/local/include",
-            --"-I./include",
-            "-Wall",
-          },
-        },
-      })
-
-                  -- Keymaps for LSP
-      vim.api.nvim_create_autocmd("LspAttach", {
-        callback = function(args)
-          local opts = { buffer = args.buf }
-          -- Go to definition (gd)
-          vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-          -- Find references (gr)
-          vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-          -- Hover docs (K)
-          vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-          -- Restart LSP if headers change
-          vim.keymap.set("n", "<leader>lr", ":LspRestart<CR>", opts)
-        end,
-      })
-    end,
+        "neovim/nvim-lspconfig",   -- kept ONLY so mason-lspconfig can find server paths
+        lazy = true,               -- never runs its own config
     },
 
-    -- Autocompletion (optional)
+    -- Autocompletion
     {
         "hrsh7th/nvim-cmp",
         dependencies = {
             "hrsh7th/cmp-nvim-lsp",
+            "hrsh7th/cmp-buffer",
+            "hrsh7th/cmp-path",
             "L3MON4D3/LuaSnip",
+            "saadparwaiz1/cmp_luasnip",
+            "rafamadriz/friendly-snippets",
+            "onsails/lspkind.nvim",
         },
         config = function()
-            local cmp = require("cmp")
+            local cmp     = require("cmp")
+            local luasnip = require("luasnip")
+            require("luasnip.loaders.from_vscode").lazy_load()
             cmp.setup({
-                sources = cmp.config.sources({
-                    { name = "nvim_lsp" },
-                }),
+                snippet = { expand = function(a) luasnip.lsp_expand(a.body) end },
                 mapping = cmp.mapping.preset.insert({
+                    ["<Tab>"]     = cmp.mapping.select_next_item(),
+                    ["<S-Tab>"]   = cmp.mapping.select_prev_item(),
+                    ["<CR>"]      = cmp.mapping.confirm({ select = true }),
                     ["<C-Space>"] = cmp.mapping.complete(),
-                    ["<CR>"] = cmp.mapping.confirm({ select = true }),
+                    ["<C-e>"]     = cmp.mapping.abort(),
                 }),
+                sources = cmp.config.sources({
+                    { name = "nvim_lsp" }, { name = "luasnip" },
+                    { name = "buffer" },   { name = "path" },
+                }),
+                formatting = {
+                    format = require("lspkind").cmp_format({ mode = "symbol_text", maxwidth = 50 }),
+                },
             })
         end,
     },
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

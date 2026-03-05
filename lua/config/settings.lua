@@ -26,7 +26,17 @@ vim.opt.showcmd = false
 
 vim.opt.swapfile = false
 
-vim.opt.syntax = on
+vim.opt.syntax = "on"
 
 --vim.keymap.set('n', '<leader>tt', ':term<CR>', {})
+--
+-- Better search experience
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+
+-- Keep cursor vertically centered
+vim.opt.scrolloff = 8
+
+-- Faster LSP hover/diagnostic popup
+vim.opt.updatetime = 250
 
