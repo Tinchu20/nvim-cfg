@@ -28,4 +28,7 @@ vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR><Esc>", { silent = true, norema
 vim.o.completeopt = "menu,menuone,noselect"
 vim.o.complete = ".,w,b,u,t"
 
+vim.opt.ignorecase = false
+vim.opt.smartcase = true
+
 vim.api.nvim_set_hl(0, "Comment", { fg = "#6A9955", italic = true })

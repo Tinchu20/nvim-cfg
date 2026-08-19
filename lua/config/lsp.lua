@@ -41,6 +41,76 @@ vim.lsp.config("lua_ls", {
 })
 vim.lsp.enable("lua_ls")
 
+-- ── RUST ─────────────────────────────────────────────────────────────────────
+--[[
+vim.lsp.config("rust_analyzer", {
+  cmd = { "rust-analyzer" },
+  filetypes = { "rust" },
+  root_markers = {
+    "Cargo.toml",
+    "rust-project.json",
+    ".git",
+  },
+  settings = {
+    ["rust-analyzer"] = {
+      cargo = {
+        allFeatures = true,
+      },
+      checkOnSave = true,
+    },
+  },
+})
+
+vim.lsp.enable("rust_analyzer")
+--]]
+--
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+vim.lsp.config("rust_analyzer", {
+  capabilities = capabilities,
+  cmd = { "rust-analyzer" },
+  filetypes = { "rust" },
+
+  root_markers = {
+    "Cargo.toml",
+    "rust-project.json",
+    ".git",
+  },
+
+  root_dir = function(bufnr, on_dir)
+    local root = vim.fs.root(bufnr, {
+      "Cargo.toml",
+      "rust-project.json",
+      ".git",
+    })
+
+    if not root then
+      return
+    end
+
+    local home = vim.fn.expand("~")
+
+    -- Do not start rust-analyzer inside dependencies or sysroot
+    if vim.startswith(root, home .. "/.rustup")
+      or vim.startswith(root, home .. "/.cargo/registry") then
+      return
+    end
+
+    on_dir(root)
+  end,
+
+  settings = {
+    ["rust-analyzer"] = {
+      cargo = {
+        allFeatures = true,
+      },
+      checkOnSave = true,
+    },
+  },
+})
+
+vim.lsp.enable("rust_analyzer")
+
 -- ── Keymaps (only when LSP attaches to a buffer) ────────────────────────────
 vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(args)
@@ -58,5 +128,11 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set("n", "]d",         vim.diagnostic.goto_next,   o)
         vim.keymap.set("n", "<A-o>",      "<cmd>ClangdSwitchSourceHeader<CR>", o)
         vim.keymap.set("n", "<leader>lr", "<cmd>LspRestart<CR>",      o)
+
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if client and client.name == "rust_analyzer" then
+            -- Toggle inlay hints on for this buffer
+            vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+        end
     end,
 })

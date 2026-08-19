@@ -47,24 +47,49 @@ return {
             require("luasnip.loaders.from_vscode").lazy_load()
             cmp.setup({
                 snippet = { expand = function(a) luasnip.lsp_expand(a.body) end },
-                mapping = cmp.mapping.preset.insert({
-                    ["<Tab>"]     = cmp.mapping.select_next_item(),
-                    ["<S-Tab>"]   = cmp.mapping.select_prev_item(),
-                    ["<CR>"]      = cmp.mapping.confirm({ select = true }),
-                    ["<C-Space>"] = cmp.mapping.complete(),
-                    ["<C-e>"]     = cmp.mapping.abort(),
-                }),
-                sources = cmp.config.sources({
-                    { name = "nvim_lsp" }, { name = "luasnip" },
-                    { name = "buffer" },   { name = "path" },
-                }),
-                formatting = {
-                    format = require("lspkind").cmp_format({ mode = "symbol_text", maxwidth = 50 }),
+                completion = {
+                    autocomplete = {
+                        cmp.TriggerEvent.TextChanged,
+                    },
                 },
-            })
-        end,
-    },
-}
+
+                --window = {
+                    --   completion = cmp.config.window.bordered(),
+                    --  documentation = cmp.config.window.bordered(),
+                    --},
+                    --
+                    --
+                    window = {
+                        completion = {
+                            border = "rounded",
+                            winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:Visual,Search:None",
+                        },
+                        documentation = {
+                            border = "rounded",
+                            winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:Visual,Search:None",
+                        },
+                    },
+
+
+
+                    mapping = cmp.mapping.preset.insert({
+                        ["<Tab>"]     = cmp.mapping.confirm({ select = true }),
+                        ["<S-Tab>"]   = cmp.mapping.select_prev_item(),
+                        ["<CR>"]      = cmp.mapping.confirm({ select = false }),
+                        ["<C-Space>"] = cmp.mapping.complete(),
+                        ["<C-e>"]     = cmp.mapping.abort(),
+                    }),
+                    sources = cmp.config.sources({
+                        { name = "nvim_lsp" }, { name = "luasnip" },
+                        { name = "buffer" },   { name = "path" },
+                    }),
+                    formatting = {
+                        format = require("lspkind").cmp_format({ mode = "symbol_text", maxwidth = 50 }),
+                    },
+                })
+            end,
+        },
+    }
 
 
 
